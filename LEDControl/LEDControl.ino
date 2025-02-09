@@ -5,13 +5,16 @@ class Common {
   virtual void OFF(){}
   virtual Common* getNextState(){}
   virtual void setNextState(Common*){}
+  virtual void encodeLEDCOlor(){}
 };
 class LED{
   private:
-  int pin;
+  int pin,pin7 = 7,pin6 = 2;
   public: 
   LED(int p){
-     pinMode(p, OUTPUT);
+    pinMode(p, OUTPUT);
+    pinMode(pin7, OUTPUT);
+    pinMode(pin6, OUTPUT);
      pin = p;    
   }
   void on(){
@@ -20,6 +23,32 @@ class LED{
   void off(){
     printf("Turning Off");
     digitalWrite(pin,LOW);
+  }
+  void encode(int pin7val,int pin6val){
+       switch (pin7val) {
+        case 0:
+            digitalWrite(7, LOW);
+            break;
+        case 1:
+            digitalWrite(7, HIGH);
+            break;
+        default:
+            Serial.println("Invalid value for pin 7");
+            break;
+    }
+
+    switch (pin6val) {
+        case 0:
+            digitalWrite(2, LOW);
+            break;
+        case 1:
+            digitalWrite(2, HIGH);
+            break;
+        default:
+            Serial.println("Invalid value for pin 6");
+            break;
+    }
+
   }
 };
 
@@ -41,6 +70,9 @@ class Blue : public Common {
   Common* getNextState() {
     return next_state;
   }
+  void encodeLEDCOlor(){
+    obj.encode(0, 1);
+  }
 };
 
 class Green: public Common {
@@ -60,6 +92,9 @@ class Green: public Common {
   }
   Common* getNextState() {
     return next_state;
+  }
+   void encodeLEDCOlor(){
+    obj.encode(1, 0);
   }
   };
   
@@ -81,6 +116,9 @@ class Red:public Common{
   }
   Common* getNextState() {
     return next_state;
+  }
+   void encodeLEDCOlor(){
+    obj.encode(1, 1);
   }
 };
 
@@ -104,9 +142,39 @@ class State {
       return blue;
      }  
   };
+
+  class Control{
+    private:
+    int i = 1;
+    
+    public:
+    Control(){}
+    bool holdThreadUntil(int val){
+      Serial.println("Loop stopped");
+            bool runLoop = false;
+            int command;
+            while(true){
+              if (Serial.available() > 0) {
+                command = Serial.parseInt();  // Read integer command
+               }
+              if(command == val){
+                runLoop = true;
+                return runLoop;
+                break;
+                }
+
+           
+        }
+
+    }
+
+  };
   
 State var = State();
 Common* obj = var.get_first_state();
+
+Control ctrl = Control();
+
 bool runLoop = false;
 void setup(){
   Serial.begin(9600);
@@ -120,30 +188,14 @@ void loop() {
         if (command == 1) {
             runLoop = true;
             Serial.println("Loop started");
-        } else if (command == 0) {
-           Serial.println("Loop stopped");
-            runLoop = false;
-            obj -> OFF(); 
-            obj = var.get_first_state();
-            digitalWrite(10,LOW);
-            while(true){
-              if (Serial.available() > 0) {
-               command = Serial.parseInt();  // Read integer command
-
-            }
-            if(command == 1){
-              runLoop = true;
-              break;}
-
-           
+        } else if (command == 0) {      
+           runLoop = ctrl.holdThreadUntil(1);
         }
-    
-     
-    }
     else{runLoop = true;}
   }
    if (runLoop) {
   obj ->on();
+  obj ->encodeLEDCOlor();
   digitalWrite(10,HIGH);
   delay(30);
   digitalWrite(10,LOW);
