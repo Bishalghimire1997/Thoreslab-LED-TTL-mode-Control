@@ -6,6 +6,8 @@ class Common {
   virtual Common* getNextState(){}
   virtual void setNextState(Common*){}
   virtual void encodeLEDCOlor(){}
+  virtual int get_delay(){}
+  virtual void set_delay(int){}
 };
 class LED{
   private:
@@ -55,6 +57,7 @@ class LED{
 class Blue : public Common {
   private:
   LED obj = LED(12);
+  int del = 1;
   Common* next_state ; 
   public:
   Blue(){}
@@ -73,11 +76,18 @@ class Blue : public Common {
   void encodeLEDCOlor(){
     obj.encode(0, 1);
   }
+  int get_delay(){
+    return del;
+  }
+  void  set_delay(int val){
+    del = val;
+  }
 };
 
 class Green: public Common {
   private:
   LED obj = LED(13); 
+  int del = 1;
   Common* next_state;
   
   public:
@@ -96,11 +106,16 @@ class Green: public Common {
    void encodeLEDCOlor(){
     obj.encode(1, 0);
   }
+  int get_delay(){
+    return del;
+  }
+   void  set_delay(int val){del = val;}
   };
   
 class Red:public Common{
   private:
   LED obj = LED(11) ;
+  int del = 1;
   Common* next_state;  
   public:
   Red(){}
@@ -120,6 +135,10 @@ class Red:public Common{
    void encodeLEDCOlor(){
     obj.encode(1, 1);
   }
+  int get_delay(){
+    return del;
+  }
+  void  set_delay(int val){del = val;}
 };
 
 class State {
@@ -133,10 +152,16 @@ class State {
      red = new Red();
      blue = new Blue();
      green = new Green();
-
      red ->setNextState(blue);
+     red ->set_delay(10);
      green ->setNextState(red);
+     green ->set_delay(10);
      blue -> setNextState(green);
+     blue ->set_delay(10);
+     
+    
+     
+     
   }
      Common* get_first_state(){
       return blue;
@@ -172,6 +197,7 @@ class State {
   
 State var = State();
 Common* obj = var.get_first_state();
+int del = 1;
 
 Control ctrl = Control();
 
@@ -179,6 +205,7 @@ bool runLoop = false;
 void setup(){
   Serial.begin(9600);
   pinMode(10, OUTPUT);
+  pinMode(4,INPUT);
 }
 void loop() {  
 
@@ -197,7 +224,8 @@ void loop() {
   obj ->on();
   obj ->encodeLEDCOlor();
   digitalWrite(10,HIGH);
-  delay(30);
+  del = obj ->get_delay();
+  delay(del);
   digitalWrite(10,LOW);
   obj -> OFF();  
   obj = obj ->getNextState(); 
