@@ -153,11 +153,11 @@ class State {
      blue = new Blue();
      green = new Green();
      red ->setNextState(blue);
-     red ->set_delay(10);
+     red ->set_delay(4);
      green ->setNextState(red);
-     green ->set_delay(10);
+     green ->set_delay(4);
      blue -> setNextState(green);
-     blue ->set_delay(10);
+     blue ->set_delay(4);
      
     
      
@@ -224,9 +224,11 @@ void loop() {
   obj ->on();
   obj ->encodeLEDCOlor();
   digitalWrite(10,HIGH);
+  delayMicroseconds(10);
+  digitalWrite(10,LOW);
   del = obj ->get_delay();
   delay(del);
-  digitalWrite(10,LOW);
+ 
   obj -> OFF();  
   obj = obj ->getNextState(); 
   }
